@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "edgar": {
+      "command": ".venv/bin/python",
+      "args": ["-m", "edgar_mcp"],
+      "env": {
+        "EDGAR_USER_AGENT": "${EDGAR_USER_AGENT}"
+      }
+    }
+  }
+}
