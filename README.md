@@ -1,5 +1,7 @@
 # EDGAR MCP
 
+[![tests](https://github.com/tlevin1/edgar-mcp/actions/workflows/tests.yml/badge.svg)](https://github.com/tlevin1/edgar-mcp/actions/workflows/tests.yml)
+
 A [FastMCP](https://gofastmcp.com) server that gives Claude Code (or any MCP
 client) direct access to SEC EDGAR financial data, plus deterministic checks
 that a filing's statements actually tie out.

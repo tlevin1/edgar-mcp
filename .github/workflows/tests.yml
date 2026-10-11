@@ -1,0 +1,29 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      # PySpark runs on the JVM; the bulk tie-out tests need Java 17+.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt -r requirements-bulk.txt
+
+      # Every test is offline: synthetic EDGAR payloads and a hand-built data set.
+      - name: Run tests
+        run: python -m pytest -q
