@@ -10,22 +10,19 @@ from __future__ import annotations
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
-from edgar_mcp.checks import ABS_TOL, DEFAULT_REL_TOL
+from edgar_mcp.checks import (
+    ABS_TOL,
+    DEFAULT_REL_TOL,
+    RNCI_PARTS,
+    RNCI_TOTAL,
+    TEMP_EQUITY_PARENT,
+    TEMP_EQUITY_TOTAL,
+)
 from .schemas import NUM_SCHEMA, SUB_SCHEMA, TAG_SCHEMA
 
 FORMS = ["10-K", "10-Q"]
 
-# Temporary ("mezzanine") equity sits between liabilities and equity, so the
-# identity needs it. Filers tag either a total or its parts, never reliably both,
-# so totals are preferred and parts are summed only when no total exists.
-TEMP_EQUITY_TOTAL = "TemporaryEquityCarryingAmountIncludingPortionAttributableToNoncontrollingInterests"
-TEMP_EQUITY_PARENT = "TemporaryEquityCarryingAmountAttributableToParent"
-RNCI_TOTAL = "RedeemableNoncontrollingInterestEquityCarryingAmount"
-RNCI_PARTS = [
-    "RedeemableNoncontrollingInterestEquityCommonCarryingAmount",
-    "RedeemableNoncontrollingInterestEquityPreferredCarryingAmount",
-    "RedeemableNoncontrollingInterestEquityOtherCarryingAmount",
-]
+# Same temporary-equity rules and tag names as the single-filing check.
 TEMP_EQUITY = [TEMP_EQUITY_TOTAL, TEMP_EQUITY_PARENT, RNCI_TOTAL, *RNCI_PARTS]
 KEY_TAGS = [
     "Assets",

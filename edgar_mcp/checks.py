@@ -38,6 +38,21 @@ CASH_FAMILIES = [
         True,
     ),
 ]
+# Temporary ("mezzanine") equity sits between liabilities and equity. Filers tag
+# either a total or its parts, so: the total if present; otherwise parent plus
+# redeemable NCI, where RNCI is its own total or the sum of its parts. Measured
+# on every 10-K/10-Q in 2026Q1 (see edgar_bulk/): when parent and RNCI differ
+# they are separate lines (summing ties out 12/12); when exactly equal it is one
+# line tagged twice (e.g. KKR), counted once. edgar_bulk uses these same names.
+TEMP_EQUITY_TOTAL = "TemporaryEquityCarryingAmountIncludingPortionAttributableToNoncontrollingInterests"
+TEMP_EQUITY_PARENT = "TemporaryEquityCarryingAmountAttributableToParent"
+RNCI_TOTAL = "RedeemableNoncontrollingInterestEquityCarryingAmount"
+RNCI_PARTS = [
+    "RedeemableNoncontrollingInterestEquityCommonCarryingAmount",
+    "RedeemableNoncontrollingInterestEquityPreferredCarryingAmount",
+    "RedeemableNoncontrollingInterestEquityOtherCarryingAmount",
+]
+
 FX_EFFECT = [
     "EffectOfExchangeRateOnCashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
     "EffectOfExchangeRateOnCashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsIncludingDisposalGroupAndDiscontinuedOperations",
@@ -79,6 +94,19 @@ def _skip(name, formula, missing: list[str]):
     return CheckResult(name, formula, "skipped", note="Not tagged in this filing: " + ", ".join(missing))
 
 
+def temporary_equity(facts, acc: str, end: str) -> tuple[list[F.Fact], str | None]:
+    """The facts that make up temporary equity, and a note when a rule applied."""
+    total = F.instant(facts, TEMP_EQUITY_TOTAL, acc, end)
+    if total:
+        return [total], None
+    parent = F.instant(facts, TEMP_EQUITY_PARENT, acc, end)
+    rnci_total = F.instant(facts, RNCI_TOTAL, acc, end)
+    rnci = [rnci_total] if rnci_total else [f for t in RNCI_PARTS if (f := F.instant(facts, t, acc, end))]
+    if parent and rnci and parent.value == sum(f.value for f in rnci):
+        return [parent], "Parent and redeemable NCI temporary equity are equal: one line tagged twice, counted once."
+    return [f for f in [parent, *rnci] if f], None
+
+
 def balance_sheet(facts, filing: F.Filing, rel_tol) -> CheckResult:
     name, formula = "balance_sheet_balances", "Assets = LiabilitiesAndStockholdersEquity"
     a = F.instant(facts, "Assets", filing.accn, filing.period_end)
@@ -110,10 +138,12 @@ def liabilities_plus_equity(facts, filing: F.Filing, rel_tol) -> CheckResult:
         if nci:
             parts.append((1, nci))
             notes.append("Added MinorityInterest because only parent equity was tagged.")
-    temp = F.first_instant(facts, ["TemporaryEquityCarryingAmountIncludingPortionAttributableToNoncontrollingInterests", "TemporaryEquityCarryingAmountAttributableToParent", "RedeemableNoncontrollingInterestEquityCarryingAmount"], acc, end)
+    temp, temp_note = temporary_equity(facts, acc, end)
     if temp:
-        parts.append((1, temp))
-        notes.append(f"Added temporary equity ({temp.concept}).")
+        parts.extend((1, f) for f in temp)
+        notes.append(f"Added temporary equity ({', '.join(f.concept for f in temp)}).")
+    if temp_note:
+        notes.append(temp_note)
     return _compare(name, formula, le, parts, rel_tol, " ".join(notes) or None)
 
 

@@ -105,3 +105,53 @@ def test_financials_derives_fcf_and_reports_gaps_as_null(clean_facts):
     assert items["revenue"]["concept"] == "RevenueFromContractWithCustomerExcludingAssessedTax"
     assert items["free_cash_flow"]["value"] == 110
     assert items["eps_diluted"] is None
+
+
+def _lpe_with_temp_equity(temp: dict[str, float]):
+    """Clean 10-K plus temporary equity, with L&SE raised to match the real total."""
+    c = clean_10k()
+    c["LiabilitiesAndStockholdersEquity"] = [row(1000 + temp.pop("_true_total"), END)]
+    c["Assets"] = c["LiabilitiesAndStockholdersEquity"]
+    for tag, val in temp.items():
+        c[tag] = [row(val, END)]
+    facts = payload(c)
+    return next(x for x in run_checks(facts, latest(facts), rel_tol=0.0)["checks"] if x["name"] == "liabilities_plus_equity")
+
+
+def test_parent_and_different_rnci_are_both_counted():
+    # Ingredion's pattern: $64M parent temporary equity and a separate $7M RNCI line.
+    check = _lpe_with_temp_equity({
+        "_true_total": 71,
+        "TemporaryEquityCarryingAmountAttributableToParent": 64,
+        "RedeemableNoncontrollingInterestEquityCarryingAmount": 7,
+    })
+    assert check["status"] == "pass" and check["computed"] == 1071
+
+
+def test_rnci_tagged_only_as_parts_is_summed():
+    check = _lpe_with_temp_equity({
+        "_true_total": 30,
+        "RedeemableNoncontrollingInterestEquityCommonCarryingAmount": 20,
+        "RedeemableNoncontrollingInterestEquityPreferredCarryingAmount": 10,
+    })
+    assert check["status"] == "pass"
+
+
+def test_one_line_tagged_twice_is_counted_once():
+    # KKR's pattern: the same $2.71B line under both tags.
+    check = _lpe_with_temp_equity({
+        "_true_total": 27,
+        "TemporaryEquityCarryingAmountAttributableToParent": 27,
+        "RedeemableNoncontrollingInterestEquityCarryingAmount": 27,
+    })
+    assert check["status"] == "pass" and "counted once" in check["note"]
+
+
+def test_temporary_equity_total_wins_over_its_components():
+    check = _lpe_with_temp_equity({
+        "_true_total": 50,
+        "TemporaryEquityCarryingAmountIncludingPortionAttributableToNoncontrollingInterests": 50,
+        "TemporaryEquityCarryingAmountAttributableToParent": 40,
+        "RedeemableNoncontrollingInterestEquityCarryingAmount": 10,
+    })
+    assert check["status"] == "pass"
