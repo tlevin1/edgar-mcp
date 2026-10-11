@@ -1,0 +1,110 @@
+[
+  {
+    "engine": "pandas",
+    "source": "tsv",
+    "quarters": 1,
+    "seconds": 5.72,
+    "read_seconds": 5.24,
+    "peak_rss_gb": 1.22,
+    "statuses": {
+      "pass/fail": 161,
+      "pass/pass": 4234,
+      "pass/skipped": 663,
+      "skipped/skipped": 122
+    }
+  },
+  {
+    "engine": "spark",
+    "source": "tsv",
+    "quarters": 1,
+    "seconds": 6.7,
+    "session_startup_seconds": 4.27,
+    "statuses": {
+      "pass/fail": 161,
+      "skipped/skipped": 122,
+      "pass/skipped": 663,
+      "pass/pass": 4234
+    }
+  },
+  {
+    "engine": "pandas",
+    "source": "parquet",
+    "quarters": 1,
+    "seconds": 1.02,
+    "read_seconds": 0.76,
+    "peak_rss_gb": 1.29,
+    "statuses": {
+      "pass/fail": 161,
+      "pass/pass": 4234,
+      "pass/skipped": 663,
+      "skipped/skipped": 122
+    }
+  },
+  {
+    "engine": "spark",
+    "source": "parquet",
+    "quarters": 1,
+    "seconds": 5.63,
+    "session_startup_seconds": 3.15,
+    "statuses": {
+      "pass/fail": 161,
+      "skipped/skipped": 122,
+      "pass/skipped": 663,
+      "pass/pass": 4234
+    }
+  },
+  {
+    "engine": "pandas",
+    "source": "tsv",
+    "quarters": 4,
+    "seconds": 21.86,
+    "read_seconds": 19.59,
+    "peak_rss_gb": 2.54,
+    "statuses": {
+      "pass/fail": 764,
+      "pass/pass": 18141,
+      "pass/skipped": 2766,
+      "skipped/skipped": 491
+    }
+  },
+  {
+    "engine": "spark",
+    "source": "tsv",
+    "quarters": 4,
+    "seconds": 12.96,
+    "session_startup_seconds": 4.66,
+    "statuses": {
+      "pass/fail": 764,
+      "skipped/skipped": 491,
+      "pass/skipped": 2766,
+      "pass/pass": 18141
+    }
+  },
+  {
+    "engine": "pandas",
+    "source": "parquet",
+    "quarters": 4,
+    "seconds": 4.37,
+    "read_seconds": 3.12,
+    "peak_rss_gb": 2.38,
+    "statuses": {
+      "pass/fail": 764,
+      "pass/pass": 18141,
+      "pass/skipped": 2766,
+      "skipped/skipped": 491
+    }
+  },
+  {
+    "engine": "spark",
+    "source": "parquet",
+    "quarters": 4,
+    "seconds": 6.69,
+    "session_startup_seconds": 3.67,
+    "statuses": {
+      "pass/fail": 764,
+      "skipped/skipped": 491,
+      "pass/skipped": 2766,
+      "pass/pass": 18141
+    }
+  }
+]
