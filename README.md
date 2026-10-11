@@ -82,6 +82,14 @@ was an FX-effect tag variant my fallbacks didn't cover yet. That is what the
 check is for: a break is either a tagging gap to fix in code or something in the
 filing worth reading.
 
+The bulk run below fed back into this check. Across a year of filings it found
+that companies tag temporary equity as a parent amount plus a separate
+redeemable-NCI line, or as RNCI parts, or as one line under two tags. The
+interactive check counted only the first tag, so Ingredion, Intuitive Machines
+and Outfront Media failed by exactly their RNCI amounts ($7M, $951.5M, $22M).
+Both checks now share one definition (`temporary_equity` in
+[`checks.py`](edgar_mcp/checks.py)) and all three tie out to the dollar.
+
 ## Setup
 
 ```bash
@@ -216,7 +224,7 @@ of RAM on four quarters.
 ## Tests
 
 ```bash
-.venv/bin/python -m pytest -q     # 29 tests, offline (the 10 bulk tests need Java)
+.venv/bin/python -m pytest -q     # 33 tests, offline (the 10 bulk tests need Java)
 ```
 
 Tests use small synthetic payloads shaped exactly like EDGAR's `companyfacts`
